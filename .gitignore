@@ -1,0 +1,11 @@
+# Javascript node_modules
+node_modules/
+
+# Build documentation
+typedoc/
+
+# Built typescript
+Scripts/
+
+# dev spesific config values
+config.json

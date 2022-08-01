@@ -1,0 +1,26 @@
+{
+    "format_version": 2,
+    "header": {
+        "name": "Wool Async",
+        "description": "Implementation of the Wool minigame only using async APIs.",
+        "min_engine_version": [ 1, 18, 20 ],
+        "uuid": "8bc54752-0d09-45ee-a47a-db5986c15050",
+        "version": [ 1, 0, 0 ]
+    },
+    "modules": [
+        {
+            "type": "script",
+            "description": "JavaScipt module code",
+            "language": "javascript",
+            "uuid": "ee864beb-2c9a-44fe-bdfc-219ea98c1b73",
+            "entry": "scripts/main.js",
+            "version": [ 1, 0, 0 ]
+        }
+    ],
+    "dependencies": [
+        {
+            "uuid": "b26a4d4c-afdf-4690-88f8-931846312678",
+            "version": [ 0, 1, 0 ]
+        }
+    ]
+}
