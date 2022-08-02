@@ -105,11 +105,12 @@ async function onWorldLoad() {
 }
 
 async function onPlayerJoin(player : Player) {
+	await player.runCommandAsync("gamemode adventure @s");
 	await player.runCommandAsync("title @s subtitle PhD level games");
 	await player.runCommandAsync("title @s title Wool");
 	await IgnoreException(() => player.runCommandAsync("clear @s"));
 	await IgnoreException(() => player.runCommandAsync("tag @s remove Ready"));
-	await player.runCommand("tp @s 0 3 0 facing 0 3 1");
+	await player.runCommandAsync("tp @s 0 3 0 facing 0 3 1");
 }
 
 async function onGameStart() {
