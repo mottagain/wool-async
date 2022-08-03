@@ -1,6 +1,14 @@
-import { BeforeChatEvent, CommandResult, Player, world } from "mojang-minecraft"
+import { 
+	BeforeChatEvent, 
+	BlockInventoryComponentContainer, 
+	BlockLocation,
+	CommandResult, 
+	MinecraftItemTypes,
+	Player, 
+	world 
+} from "mojang-minecraft"
 
-const roundTime = 10;
+const roundTime = 180;
 const overworld = world.getDimension("overworld");
 
 let initialized = false;
@@ -52,6 +60,8 @@ world.events.tick.subscribe(async (tickEvent) => {
 		}
 
 		await updateTimeRemaining(currentTick);
+
+		await updateScore();
 	}
 });
 
@@ -72,6 +82,50 @@ async function updateTimeRemaining(tick: number) {
 			if (roundRemaingingTime < 0) {
 				await onGameEnd();
 			}
+		}
+	}
+}
+
+async function updateScore() {
+	if (roundRemaingingTime >= 0) {
+		const players = Array.from(world.getPlayers());
+
+		//   Create arena copy for each player
+		for (let i = 0; i < players.length; i++) {
+			let playerScore = 0;
+			let chestBlock = overworld.getBlock(new BlockLocation(13 + 100 * i, 6, 131));
+
+			let chest: BlockInventoryComponentContainer = chestBlock.getComponent("inventory").container;
+			for (let j = 0; j < chest.size; j++) {
+				let itemStack = chest.getItem(j);
+				if (itemStack && itemStack.id == MinecraftItemTypes.wool.id) {
+					switch (itemStack.data) {
+						case 2: // Purple
+							playerScore += 5 * itemStack.amount;
+							break;
+						case 11: // Blue
+							playerScore += 3 * itemStack.amount;
+							break;
+						case 14: // Red
+							playerScore += 2 * itemStack.amount;
+							break;
+						case 15: // Black
+							playerScore += 10 * itemStack.amount;
+							break;
+						default:
+							// White & all others
+							playerScore += 1 * itemStack.amount;
+							break;
+					}
+				}
+			}
+
+			if (playerScore > winningScore) {
+				winningScore = playerScore;
+				winningPlayerName = players[i].name;
+			}
+
+			await players[i].runCommandAsync(`scoreboard players set @s score ${playerScore}`);
 		}
 	}
 }
