@@ -1,10 +1,14 @@
 import { BeforeChatEvent, CommandResult, Player, world } from "mojang-minecraft"
 
+const roundTime = 10;
 const overworld = world.getDimension("overworld");
+
 let initialized = false;
 let playersAreReady = false;
 let inGame = false;
 let roundRemaingingTime = -1;
+let winningPlayerName = "";
+let winningScore = 0;
 
 async function IgnoreException(Inner : () => Promise<CommandResult>) {
 	try {
@@ -99,8 +103,8 @@ async function onWorldLoad() {
 		overworld.runCommandAsync("gamerule doMobSpawning false"),
 		overworld.runCommandAsync("gamerule doWeatherCycle false"),
 		overworld.runCommandAsync("gamerule randomtickspeed 6"),
+		overworld.runCommandAsync("gamerule sendCommandFeedback false"),
 		IgnoreException(() => overworld.runCommandAsync("scoreboard objectives remove score")),
-		// overworld.runCommandAsync("gamerule sendCommandFeedback false"),
 	]);
 }
 
@@ -128,17 +132,42 @@ async function onGameStart() {
 	await overworld.runCommandAsync("scoreboard players set @a score 0");
 	await overworld.runCommandAsync("scoreboard objectives setdisplay sidebar score descending");
 
-	roundRemaingingTime = 10;	
+	//   Create arena copy for each player
+	for (let i = 0; i < playerCount; i++) {
+		let x = 100 * i;
+		let y = 0;
+		let z = 100;
+		await players[i].runCommandAsync(`structure load arena ${x} ${y} ${z}`);
+
+		x += 8;
+		y += 1;
+		z += 1;
+		await players[i].runCommandAsync(`tp @s ${x} ${y} ${z} facing ${x} ${y} ${z + 1}`);
+	}
+
+	await overworld.runCommandAsync("title @a clear");
+	await overworld.runCommandAsync("title @a title GO!");
+
+	roundRemaingingTime = roundTime;
 }
 
 async function onGameEnd() {
 	playersAreReady = false;
 	inGame = false;
 
-	await overworld.runCommandAsync("title @a title Game Over");
     await IgnoreException(() => overworld.runCommandAsync("scoreboard objectives remove score"));
 	await IgnoreException(() => overworld.runCommandAsync("clear @a"));
 	await IgnoreException(() => overworld.runCommandAsync("tag @a remove Ready"));
+	await overworld.runCommandAsync("tp @a 0 3 0");
+	await overworld.runCommandAsync("title @a clear");
+
+	if (winningScore > 0) {
+		await overworld.runCommandAsync(`title @a subtitle ${winningPlayerName} wins!`);
+		await overworld.runCommandAsync("title @a title Game Over");
+	} else {
+		await overworld.runCommandAsync("title @a subtitle Nobody scored. What gives?");
+		await overworld.runCommandAsync("title @a title Game Over");
+	}
 }
 
 async function clearWorld() {
